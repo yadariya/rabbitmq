@@ -1,0 +1,43 @@
+version: "3.9"
+services:
+  reader:
+    image: "yadariya/tvlab:latest"
+    restart: unless-stopped
+    environment:
+      - HOST=rabbit
+      - PORT=5672
+      - USER=test
+      - PASSWORD=test
+    deploy:
+        resources:
+            limits:
+              cpus: 0.50
+              memory: 512M
+            reservations:
+              cpus: 0.25
+              memory: 128M
+    depends_on:
+      rabbit:
+        condition: service_healthy
+
+  rabbit:
+    image: "rabbitmq:3.11-management"
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=test
+      - RABBITMQ_DEFAULT_PASS=test
+    deploy:
+        resources:
+            limits:
+              cpus: 0.50
+              memory: 512M
+            reservations:
+              cpus: 0.25
+              memory: 128M
+    healthcheck:
+      test: rabbitmq-diagnostics check_port_connectivity
+      interval: 30s
+      timeout: 30s
+      retries: 10
